@@ -32,8 +32,11 @@ package co.edu.uniandes.csw.Arquidalgos.tienda.service;
 
 import co.edu.uniandes.csw.Arquidalgos.tienda.logic.api.ITiendaLogicService;
 import co.edu.uniandes.csw.Arquidalgos.tienda.logic.dto.TiendaDTO;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -41,32 +44,93 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.HttpHostConnectException;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 
 
 public abstract class _TiendaService {
 
 	@Inject
 	protected ITiendaLogicService tiendaLogicService;
-	
+	/*
+        public List<TiendaDTO> createTienda(List<TiendaDTO> tiendaL){
+        */
 	@POST
-	public List<TiendaDTO> createTienda(List<TiendaDTO> tiendaL){
-            List<TiendaDTO> lista = getTiendas();
+	public List<TiendaDTO> createTienda(String tiendaL){
+            System.out.print("SYSO String - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+            System.out.print(tiendaL);
             List<TiendaDTO> resp = new ArrayList<TiendaDTO>();
-            for (int i = 0; i < tiendaL.size(); i++) {
-                TiendaDTO tiendaAct = tiendaL.get(i);
-                String idnuevo = tiendaAct.getFacebookId();
-                boolean encontrado = false;
-                for (int j = 0; j < lista.size(); j++) {
-                    if(lista.get(j).getFacebookId().equals(idnuevo))
-                    {
-                        encontrado=true;
-                    }
+            HttpClient httpClient = new DefaultHttpClient();
+            System.out.print("Peticion a 172.24.98.68");
+            HttpPost httpPost = new HttpPost("http://172.24.98.68:8080/TuMeOp.web/webresources/Tienda");
+        try {
+                httpPost.addHeader("content-type", "application/json");
+                StringEntity f = new StringEntity(tiendaL);
+                httpPost.setEntity(f);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            } 
+            try {
+                org.apache.http.HttpResponse response = httpClient.execute(httpPost);
+                HttpEntity respEntity = response.getEntity();
+                if (respEntity != null) {
+                    String answer = EntityUtils.toString(respEntity);
+                    System.out.print("SYSO2 - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+                    System.out.print(answer);
+                    System.out.print("SYSO2 - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+                    //JSONObject jObject = new JSONObject(answer);
+                    System.out.print("SYSO3 - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+                    //System.out.print(jObject);
+                    System.out.print("SYSO3 - - - - - - - - - - - - - - - - - - - - - - - - - - -");
                 }
-                if(!encontrado)
-                {
-		tiendaLogicService.createTienda(tiendaAct);
-                resp.add(tiendaAct);
+            } catch (HttpHostConnectException e) {
+                System.out.print("Conexión a 172.24.98.68 fallida");
+                System.out.print("Conectandonse a 172.24.98.137");
+                createTienda2(tiendaL);
+            }catch (Exception f) {
+                f.printStackTrace();
+            }
+            return resp;
+	}
+        
+        public List<TiendaDTO> createTienda2(String tiendaL){
+            System.out.print("SYSO String - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+            System.out.print(tiendaL);
+            List<TiendaDTO> resp = new ArrayList<TiendaDTO>();
+            HttpClient httpClient = new DefaultHttpClient();
+            HttpPost httpPost = new HttpPost("http://172.24.98.137:8080/TuMeOp.web/webresources/Tienda");
+        try {
+                httpPost.addHeader("content-type", "application/json");
+                StringEntity f = new StringEntity(tiendaL);
+                httpPost.setEntity(f);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            } 
+            try {
+                org.apache.http.HttpResponse response = httpClient.execute(httpPost);
+                HttpEntity respEntity = response.getEntity();
+                if (respEntity != null) {
+                    String answer = EntityUtils.toString(respEntity);
+                    System.out.print("SYSO2 - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+                    System.out.print(answer);
+                    System.out.print("SYSO2 - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+                    //JSONObject jObject = new JSONObject(answer);
+                    System.out.print("SYSO3 - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+                    //System.out.print(jObject);
+                    System.out.print("SYSO3 - - - - - - - - - - - - - - - - - - - - - - - - - - -");
                 }
+            } catch (HttpHostConnectException e) {
+                e.printStackTrace();
+            }catch (Exception e) {
+                e.printStackTrace();
             }
             return resp;
 	}
